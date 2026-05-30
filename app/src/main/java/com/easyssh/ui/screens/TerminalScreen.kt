@@ -2,6 +2,7 @@ package com.easyssh.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -105,6 +110,7 @@ fun TerminalScreen(
                 modifier = Modifier.fillMaxSize()
             )
         }
+        TerminalShortcutKeyboard(onInput = onInput)
     }
 
     if (showDisplayDialog) {
@@ -155,6 +161,115 @@ private fun TerminalTopBar(
         OutlinedButton(onClick = onDisconnect) {
             Text("Desconectar")
         }
+    }
+}
+
+@Composable
+private fun TerminalShortcutKeyboard(
+    onInput: (String) -> Unit
+) {
+    var ctrlActive by rememberSaveable { mutableStateOf(false) }
+    var shiftActive by rememberSaveable { mutableStateOf(false) }
+    var altActive by rememberSaveable { mutableStateOf(false) }
+
+    fun send(sequence: String) {
+        onInput(sequence)
+        ctrlActive = false
+        shiftActive = false
+        altActive = false
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 8.dp, vertical = 7.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            ModifierKey("Ctrl", ctrlActive) { ctrlActive = !ctrlActive }
+            ModifierKey("Shift", shiftActive) { shiftActive = !shiftActive }
+            ModifierKey("Alt", altActive) { altActive = !altActive }
+            ShortcutKey("Esc") { send(withAltPrefix("\u001B", altActive)) }
+            ShortcutKey("Tab") {
+                send(
+                    when {
+                        shiftActive -> withAltPrefix("\u001B[Z", altActive)
+                        else -> withAltPrefix("\t", altActive)
+                    }
+                )
+            }
+            ShortcutKey("Enter") { send("\r") }
+            ShortcutKey("Bksp") { send("\u007F") }
+            ShortcutKey("Space") { send(withAltPrefix(" ", altActive)) }
+        }
+
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            ShortcutKey("←") { send(cursorSequence("D", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("↓") { send(cursorSequence("B", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("↑") { send(cursorSequence("A", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("→") { send(cursorSequence("C", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("Home") { send(homeEndSequence("H", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("End") { send(homeEndSequence("F", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("PgUp") { send(pageSequence("5", ctrlActive, shiftActive, altActive)) }
+            ShortcutKey("PgDn") { send(pageSequence("6", ctrlActive, shiftActive, altActive)) }
+            CTRL_LETTERS.forEach { letter ->
+                ShortcutKey(letter) {
+                    send(letterSequence(letter, ctrlActive, shiftActive, altActive))
+                }
+            }
+            SYMBOL_KEYS.forEach { key ->
+                ShortcutKey(key.label) {
+                    send(withAltPrefix(if (shiftActive) key.shifted else key.normal, altActive))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModifierKey(
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit
+) {
+    val colors = if (active) {
+        ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    } else {
+        ButtonDefaults.filledTonalButtonColors()
+    }
+    FilledTonalButton(
+        modifier = Modifier
+            .height(36.dp)
+            .widthIn(min = 68.dp),
+        colors = colors,
+        onClick = onClick
+    ) {
+        Text(label, maxLines = 1)
+    }
+}
+
+@Composable
+private fun ShortcutKey(
+    label: String,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        modifier = Modifier
+            .height(36.dp)
+            .widthIn(min = 48.dp),
+        onClick = onClick
+    ) {
+        Text(label, maxLines = 1)
     }
 }
 
@@ -216,3 +331,89 @@ private fun ConnectionState.label(): String = when (this) {
     ConnectionState.DISCONNECTED -> "desconectado"
     ConnectionState.ERROR -> "erro"
 }
+
+private data class SymbolKey(
+    val label: String,
+    val normal: String,
+    val shifted: String = normal
+)
+
+private val CTRL_LETTERS = listOf("A", "C", "D", "E", "L", "R", "Z")
+
+private val SYMBOL_KEYS = listOf(
+    SymbolKey("/", "/", "?"),
+    SymbolKey("-", "-", "_"),
+    SymbolKey("_", "_"),
+    SymbolKey("|", "|"),
+    SymbolKey("~", "~"),
+    SymbolKey(".", "."),
+    SymbolKey(":", ":")
+)
+
+private fun letterSequence(
+    letter: String,
+    ctrl: Boolean,
+    shift: Boolean,
+    alt: Boolean
+): String {
+    val value = if (ctrl) {
+        controlCode(letter.first())
+    } else if (shift) {
+        letter.uppercase()
+    } else {
+        letter.lowercase()
+    }
+    return withAltPrefix(value, alt)
+}
+
+private fun controlCode(letter: Char): String {
+    val upper = letter.uppercaseChar()
+    return (upper.code - '@'.code).toChar().toString()
+}
+
+private fun cursorSequence(
+    direction: String,
+    ctrl: Boolean,
+    shift: Boolean,
+    alt: Boolean
+): String {
+    val modifier = xtermModifier(ctrl, shift, alt)
+    return if (modifier == null) "\u001B[$direction" else "\u001B[1;${modifier}$direction"
+}
+
+private fun homeEndSequence(
+    finalByte: String,
+    ctrl: Boolean,
+    shift: Boolean,
+    alt: Boolean
+): String {
+    val modifier = xtermModifier(ctrl, shift, alt)
+    return if (modifier == null) "\u001B[$finalByte" else "\u001B[1;${modifier}$finalByte"
+}
+
+private fun pageSequence(
+    pageCode: String,
+    ctrl: Boolean,
+    shift: Boolean,
+    alt: Boolean
+): String {
+    val modifier = xtermModifier(ctrl, shift, alt)
+    return if (modifier == null) "\u001B[${pageCode}~" else "\u001B[${pageCode};${modifier}~"
+}
+
+private fun xtermModifier(
+    ctrl: Boolean,
+    shift: Boolean,
+    alt: Boolean
+): Int? {
+    var value = 1
+    if (shift) value += 1
+    if (alt) value += 2
+    if (ctrl) value += 4
+    return value.takeIf { it > 1 }
+}
+
+private fun withAltPrefix(
+    sequence: String,
+    alt: Boolean
+): String = if (alt) "\u001B$sequence" else sequence

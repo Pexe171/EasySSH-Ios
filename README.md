@@ -65,16 +65,16 @@ As versões públicas ficam em:
 https://github.com/Pexe171/EasySSH/releases
 ```
 
-Download direto da versão `v0.1.0`:
+Download direto da versão `v0.1.1`:
 
 ```text
-https://github.com/Pexe171/EasySSH/releases/download/v0.1.0/EasySSH-v0.1.0-debug.apk
+https://github.com/Pexe171/EasySSH/releases/download/v0.1.1/EasySSH-v0.1.1-debug.apk
 ```
 
 O APK da versão atual fica disponível como:
 
 ```text
-EasySSH-v0.1.0-debug.apk
+EasySSH-v0.1.1-debug.apk
 ```
 
 Esse pacote é adequado para teste em aparelho físico. Ele é assinado com a chave debug padrão do Android; uma assinatura release com keystore privado deve ser configurada antes de distribuição em produção.
