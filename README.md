@@ -57,6 +57,22 @@ Instalação em um Android conectado por USB:
 adb install -r app\build\outputs\apk\debug\app-debug.apk
 ```
 
+## Download do APK
+
+As versões públicas ficam em:
+
+```text
+https://github.com/Pexe171/EasySSH/releases
+```
+
+O APK da versão atual fica disponível como:
+
+```text
+EasySSH-v0.1.0-debug.apk
+```
+
+Esse pacote é adequado para teste em aparelho físico. Ele é assinado com a chave debug padrão do Android; uma assinatura release com keystore privado deve ser configurada antes de distribuição em produção.
+
 ## Uso com AWS EC2
 
 1. Crie uma nova VPS no EasySSH.
