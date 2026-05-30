@@ -1,0 +1,9 @@
+services:
+  ssh-test:
+    build:
+      context: ./docker/ssh-test
+    ports:
+      - "2222:22"
+    environment:
+      AUTHORIZED_KEYS: ${EASYSSH_TEST_PUBLIC_KEY}
+

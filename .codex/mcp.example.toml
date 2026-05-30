@@ -1,0 +1,38 @@
+# Copy the relevant blocks into C:\Users\ikezn\.codex\config.toml and restart Codex.
+# Do not enable secret-backed servers until their environment variables exist.
+
+[mcp_servers.filesystem]
+command = "npx.cmd"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-filesystem@2026.1.14",
+  "C:\\Users\\ikezn\\Downloads\\EasySSH"
+]
+
+# Requires uvx.
+[mcp_servers.fetch]
+command = "uvx"
+args = ["mcp-server-fetch"]
+
+# Requires GITHUB_PERSONAL_ACCESS_TOKEN.
+[mcp_servers.github]
+command = "docker"
+args = [
+  "run",
+  "-i",
+  "--rm",
+  "-e",
+  "GITHUB_PERSONAL_ACCESS_TOKEN",
+  "ghcr.io/github/github-mcp-server"
+]
+
+# Requires BRAVE_API_KEY.
+[mcp_servers.brave-search]
+command = "npx.cmd"
+args = ["-y", "@modelcontextprotocol/server-brave-search@0.6.2"]
+
+# Requires a PostgreSQL connection string. Not used by the current Android-only MVP.
+[mcp_servers.postgres]
+command = "npx.cmd"
+args = ["-y", "@modelcontextprotocol/server-postgres@0.6.2", "postgresql://user:password@localhost:5432/easyssh"]
+
