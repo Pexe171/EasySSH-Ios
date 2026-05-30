@@ -48,10 +48,9 @@ fun TerminalScreen(
     terminalOutput: SharedFlow<ByteArray>,
     onInput: (String) -> Unit,
     onResize: (Int, Int) -> Unit,
-    onDisconnect: () -> Unit,
-    onBack: () -> Unit
+    onDisconnect: () -> Unit
 ) {
-    BackHandler(onBack = onBack)
+    BackHandler(onBack = onDisconnect)
 
     val terminalHandle = remember { TerminalWebViewHandle() }
     var showDisplayDialog by rememberSaveable { mutableStateOf(false) }
@@ -90,8 +89,7 @@ fun TerminalScreen(
         TerminalTopBar(
             state = state,
             onDisplaySettings = { showDisplayDialog = true },
-            onDisconnect = onDisconnect,
-            onBack = onBack
+            onDisconnect = onDisconnect
         )
         if (state.connectionState == ConnectionState.CONNECTING) {
             LinearProgressIndicator(
@@ -124,8 +122,7 @@ fun TerminalScreen(
 private fun TerminalTopBar(
     state: EasySshUiState,
     onDisplaySettings: () -> Unit,
-    onDisconnect: () -> Unit,
-    onBack: () -> Unit
+    onDisconnect: () -> Unit
 ) {
     val profile = state.activeProfile
     Row(
@@ -157,9 +154,6 @@ private fun TerminalTopBar(
         }
         OutlinedButton(onClick = onDisconnect) {
             Text("Desconectar")
-        }
-        Button(onClick = onBack) {
-            Text("Sair")
         }
     }
 }

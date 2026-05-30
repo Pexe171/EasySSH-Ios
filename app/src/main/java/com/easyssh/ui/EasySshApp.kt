@@ -63,8 +63,7 @@ fun EasySshApp(viewModel: MainViewModel) {
                     terminalOutput = viewModel.terminalOutput,
                     onInput = viewModel::sendTerminalInput,
                     onResize = viewModel::resizeTerminal,
-                    onDisconnect = viewModel::disconnect,
-                    onBack = {
+                    onDisconnect = {
                         viewModel.disconnect()
                         viewModel.goHome()
                     }
@@ -104,4 +103,3 @@ fun EasySshApp(viewModel: MainViewModel) {
         }
     }
 }
-
