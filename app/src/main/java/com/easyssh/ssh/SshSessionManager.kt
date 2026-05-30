@@ -102,12 +102,14 @@ class SshSessionManager {
         stream: InputStream,
         onOutput: (ByteArray) -> Unit
     ) {
-        val buffer = ByteArray(BUFFER_SIZE)
-        while (kotlin.coroutines.coroutineContext.isActive) {
-            val read = stream.read(buffer)
-            if (read < 0) break
-            if (read > 0) {
-                onOutput(buffer.copyOf(read))
+        runCatching {
+            val buffer = ByteArray(BUFFER_SIZE)
+            while (kotlin.coroutines.coroutineContext.isActive) {
+                val read = stream.read(buffer)
+                if (read < 0) break
+                if (read > 0) {
+                    onOutput(buffer.copyOf(read))
+                }
             }
         }
     }
