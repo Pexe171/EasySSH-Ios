@@ -32,7 +32,7 @@ The private key itself is encrypted and stored as an app-private file under `fil
 1. UI asks for host if the profile uses rotating IP.
 2. ViewModel decrypts the selected key into memory.
 3. SSHJ receives the key through a temporary file because its key loader expects a file path.
-4. SSHJ uses Android-compatible negotiation: forced BouncyCastle registration is disabled and `curve25519/X25519` key exchange is filtered out.
+4. The app replaces Android's old `BC` provider with the bundled modern BouncyCastle provider before SSHJ starts.
 5. Host key verifier compares the current fingerprint with the stored one.
 6. On first connection, the UI prompts for Trust On First Use confirmation.
 7. A PTY shell opens and streams bytes to `xterm.js`.
