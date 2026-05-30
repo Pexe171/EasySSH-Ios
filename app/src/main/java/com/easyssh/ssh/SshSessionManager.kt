@@ -35,7 +35,7 @@ class SshSessionManager {
         try {
             tempKey.writeBytes(privateKeyBytes)
 
-            val ssh = SSHClient().also {
+            val ssh = SSHClient(androidSshConfig()).also {
                 it.connectTimeout = CONNECT_TIMEOUT_MS
                 it.timeout = SOCKET_TIMEOUT_MS
                 it.addHostKeyVerifier(object : HostKeyVerifier {
@@ -118,4 +118,3 @@ class SshSessionManager {
         const val BUFFER_SIZE = 8192
     }
 }
-

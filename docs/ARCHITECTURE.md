@@ -32,10 +32,11 @@ The private key itself is encrypted and stored as an app-private file under `fil
 1. UI asks for host if the profile uses rotating IP.
 2. ViewModel decrypts the selected key into memory.
 3. SSHJ receives the key through a temporary file because its key loader expects a file path.
-4. Host key verifier compares the current fingerprint with the stored one.
-5. On first connection, the UI prompts for Trust On First Use confirmation.
-6. A PTY shell opens and streams bytes to `xterm.js`.
-7. Terminal input flows back through the WebView JavaScript bridge to SSHJ.
+4. SSHJ uses Android-compatible negotiation: forced BouncyCastle registration is disabled and `curve25519/X25519` key exchange is filtered out.
+5. Host key verifier compares the current fingerprint with the stored one.
+6. On first connection, the UI prompts for Trust On First Use confirmation.
+7. A PTY shell opens and streams bytes to `xterm.js`.
+8. Terminal input flows back through the WebView JavaScript bridge to SSHJ.
 
 ## Non-MVP Items
 
@@ -45,4 +46,3 @@ The private key itself is encrypted and stored as an app-private file under `fil
 - Multiple simultaneous terminal tabs.
 - Saved command buttons and Ctrl/Shift shortcut bar.
 - Release signing and Play Store packaging.
-
