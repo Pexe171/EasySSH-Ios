@@ -11,14 +11,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +54,9 @@ fun TerminalScreen(
     BackHandler(onBack = onBack)
 
     val terminalHandle = remember { TerminalWebViewHandle() }
+    var showDisplayDialog by rememberSaveable { mutableStateOf(false) }
+    var fontSize by rememberSaveable { mutableFloatStateOf(11f) }
+    var lineHeight by rememberSaveable { mutableFloatStateOf(1.08f) }
     val bridge = remember {
         TerminalBridge(
             object : TerminalInputSink {
@@ -58,6 +69,10 @@ fun TerminalScreen(
                 }
             }
         )
+    }
+
+    LaunchedEffect(fontSize, lineHeight) {
+        terminalHandle.configureDisplay(fontSize.toInt(), lineHeight)
     }
 
     LaunchedEffect(terminalOutput) {
@@ -74,6 +89,7 @@ fun TerminalScreen(
     ) {
         TerminalTopBar(
             state = state,
+            onDisplaySettings = { showDisplayDialog = true },
             onDisconnect = onDisconnect,
             onBack = onBack
         )
@@ -92,11 +108,22 @@ fun TerminalScreen(
             )
         }
     }
+
+    if (showDisplayDialog) {
+        TerminalDisplayDialog(
+            fontSize = fontSize,
+            lineHeight = lineHeight,
+            onFontSizeChange = { fontSize = it },
+            onLineHeightChange = { lineHeight = it },
+            onDismiss = { showDisplayDialog = false }
+        )
+    }
 }
 
 @Composable
 private fun TerminalTopBar(
     state: EasySshUiState,
+    onDisplaySettings: () -> Unit,
     onDisconnect: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -125,6 +152,9 @@ private fun TerminalTopBar(
                 overflow = TextOverflow.Ellipsis
             )
         }
+        OutlinedButton(onClick = onDisplaySettings) {
+            Text("Aa")
+        }
         OutlinedButton(onClick = onDisconnect) {
             Text("Desconectar")
         }
@@ -134,3 +164,53 @@ private fun TerminalTopBar(
     }
 }
 
+@Composable
+private fun TerminalDisplayDialog(
+    fontSize: Float,
+    lineHeight: Float,
+    onFontSizeChange: (Float) -> Unit,
+    onLineHeightChange: (Float) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Dimensoes") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                Column {
+                    Text("Fonte ${fontSize.toInt()}")
+                    Slider(
+                        value = fontSize,
+                        onValueChange = onFontSizeChange,
+                        valueRange = 9f..18f,
+                        steps = 8
+                    )
+                }
+                Column {
+                    Text("Linhas ${"%.2f".format(lineHeight)}")
+                    Slider(
+                        value = lineHeight,
+                        onValueChange = onLineHeightChange,
+                        valueRange = 1f..1.5f,
+                        steps = 4
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Pronto")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onFontSizeChange(11f)
+                    onLineHeightChange(1.08f)
+                }
+            ) {
+                Text("Padrao")
+            }
+        }
+    )
+}
