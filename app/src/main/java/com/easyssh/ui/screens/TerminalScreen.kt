@@ -3,11 +3,14 @@ package com.easyssh.ui.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,11 +33,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,6 +50,7 @@ import com.easyssh.terminal.TerminalWebViewHandle
 import com.easyssh.ui.ConnectionState
 import com.easyssh.ui.EasySshUiState
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 
 @Composable
 fun TerminalScreen(
@@ -103,13 +109,11 @@ fun TerminalScreen(
                     .height(3.dp)
             )
         }
-        Box(modifier = Modifier.weight(1f)) {
-            TerminalWebView(
-                bridge = bridge,
-                handle = terminalHandle,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        ScrollableTerminalViewport(
+            modifier = Modifier.weight(1f),
+            bridge = bridge,
+            handle = terminalHandle
+        )
         TerminalShortcutKeyboard(onInput = onInput)
     }
 
@@ -160,6 +164,93 @@ private fun TerminalTopBar(
         }
         OutlinedButton(onClick = onDisconnect) {
             Text("Desconectar")
+        }
+    }
+}
+
+@Composable
+private fun ScrollableTerminalViewport(
+    modifier: Modifier,
+    bridge: TerminalBridge,
+    handle: TerminalWebViewHandle
+) {
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+
+    fun scrollByStep(direction: Int) {
+        val step = with(density) { TERMINAL_SCROLL_STEP.roundToPx() }
+        val next = (scrollState.value + direction * step)
+            .coerceIn(0, scrollState.maxValue)
+        coroutineScope.launch {
+            scrollState.animateScrollTo(next)
+        }
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.Black)
+    ) {
+        val terminalHeight = maxHeight
+
+        Column(
+            modifier = Modifier
+                .height(terminalHeight + TERMINAL_SCROLL_EXTRA_SPACE)
+                .verticalScroll(scrollState)
+        ) {
+            TerminalWebView(
+                bridge = bridge,
+                handle = handle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(terminalHeight)
+            )
+            Spacer(modifier = Modifier.height(TERMINAL_SCROLL_EXTRA_SPACE))
+        }
+
+        TerminalScrollControls(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp),
+            canScrollUp = scrollState.value > 0,
+            canScrollDown = scrollState.value < scrollState.maxValue,
+            onScrollUp = { scrollByStep(-1) },
+            onScrollDown = { scrollByStep(1) }
+        )
+    }
+}
+
+@Composable
+private fun TerminalScrollControls(
+    modifier: Modifier,
+    canScrollUp: Boolean,
+    canScrollDown: Boolean,
+    onScrollUp: () -> Unit,
+    onScrollDown: () -> Unit
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.End
+    ) {
+        FilledTonalButton(
+            modifier = Modifier
+                .height(34.dp)
+                .widthIn(min = 58.dp),
+            enabled = canScrollUp,
+            onClick = onScrollUp
+        ) {
+            Text("Subir", maxLines = 1)
+        }
+        FilledTonalButton(
+            modifier = Modifier
+                .height(34.dp)
+                .widthIn(min = 58.dp),
+            enabled = canScrollDown,
+            onClick = onScrollDown
+        ) {
+            Text("Descer", maxLines = 1)
         }
     }
 }
@@ -417,3 +508,6 @@ private fun withAltPrefix(
     sequence: String,
     alt: Boolean
 ): String = if (alt) "\u001B$sequence" else sequence
+
+private val TERMINAL_SCROLL_EXTRA_SPACE = 260.dp
+private val TERMINAL_SCROLL_STEP = 120.dp
