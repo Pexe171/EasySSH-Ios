@@ -22,6 +22,19 @@
     terminal.open(terminalElement);
     terminal.focus();
 
+    function configureInputElement() {
+        const textarea = terminal.textarea;
+        if (!textarea) {
+            return;
+        }
+        textarea.setAttribute('autocomplete', 'off');
+        textarea.setAttribute('autocorrect', 'off');
+        textarea.setAttribute('autocapitalize', 'off');
+        textarea.setAttribute('spellcheck', 'false');
+    }
+
+    configureInputElement();
+
     terminal.onData(function (data) {
         if (window.EasySSH && window.EasySSH.onInput) {
             window.EasySSH.onInput(data);
@@ -78,6 +91,22 @@
         setTimeout(fitTerminal, 30);
     };
 
+    window.easysshRefresh = function () {
+        configureInputElement();
+        requestAnimationFrame(function () {
+            fitTerminal();
+            terminal.refresh(0, Math.max(terminal.rows - 1, 0));
+            terminal.focus();
+        });
+    };
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            window.easysshRefresh();
+        }
+    });
+
+    window.addEventListener('focus', window.easysshRefresh);
     window.addEventListener('resize', fitTerminal);
     setTimeout(fitTerminal, 50);
     terminal.writeln('EasySSH');

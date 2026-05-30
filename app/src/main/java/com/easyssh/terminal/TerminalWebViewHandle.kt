@@ -28,6 +28,15 @@ class TerminalWebViewHandle {
         evaluate("window.easysshClear()")
     }
 
+    fun resume() {
+        webView?.onResume()
+        evaluate("if (window.easysshRefresh) window.easysshRefresh();")
+    }
+
+    fun pause() {
+        webView?.onPause()
+    }
+
     fun configureDisplay(fontSize: Int, lineHeight: Float) {
         this.fontSize = fontSize.coerceIn(9, 18)
         this.lineHeight = lineHeight.coerceIn(1f, 1.5f)
