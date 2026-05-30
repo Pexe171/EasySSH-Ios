@@ -65,6 +65,12 @@ As versões públicas ficam em:
 https://github.com/Pexe171/EasySSH/releases
 ```
 
+Download direto da versão `v0.1.0`:
+
+```text
+https://github.com/Pexe171/EasySSH/releases/download/v0.1.0/EasySSH-v0.1.0-debug.apk
+```
+
 O APK da versão atual fica disponível como:
 
 ```text
