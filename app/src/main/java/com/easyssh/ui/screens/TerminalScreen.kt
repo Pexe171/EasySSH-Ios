@@ -142,7 +142,7 @@ private fun TerminalTopBar(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${state.activeHost ?: ""} - ${state.connectionState.name.lowercase()}",
+                text = "${state.activeHost ?: ""} - ${state.connectionState.label()}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
@@ -168,7 +168,7 @@ private fun TerminalDisplayDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Dimensoes") },
+        title = { Text("Dimensões") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 Column {
@@ -181,7 +181,7 @@ private fun TerminalDisplayDialog(
                     )
                 }
                 Column {
-                    Text("Linhas ${"%.2f".format(lineHeight)}")
+                    Text("Espaçamento ${"%.2f".format(lineHeight)}")
                     Slider(
                         value = lineHeight,
                         onValueChange = onLineHeightChange,
@@ -203,8 +203,16 @@ private fun TerminalDisplayDialog(
                     onLineHeightChange(1.08f)
                 }
             ) {
-                Text("Padrao")
+                Text("Padrão")
             }
         }
     )
+}
+
+private fun ConnectionState.label(): String = when (this) {
+    ConnectionState.IDLE -> "pronto"
+    ConnectionState.CONNECTING -> "conectando"
+    ConnectionState.CONNECTED -> "conectado"
+    ConnectionState.DISCONNECTED -> "desconectado"
+    ConnectionState.ERROR -> "erro"
 }

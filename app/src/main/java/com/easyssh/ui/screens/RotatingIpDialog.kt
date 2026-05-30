@@ -31,7 +31,7 @@ fun RotatingIpDialog(
                     value = host,
                     onValueChange = { host = it },
                     singleLine = true,
-                    label = { Text("IP publico") }
+                    label = { Text("IP público ou DNS") }
                 )
             }
         },
@@ -47,4 +47,3 @@ fun RotatingIpDialog(
         }
     )
 }
-

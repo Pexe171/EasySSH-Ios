@@ -48,7 +48,7 @@ fun MachineFormScreen(
     onDelete: (MachineProfile) -> Unit
 ) {
     var alias by rememberSaveable(profile?.id) { mutableStateOf(profile?.alias.orEmpty()) }
-    var username by rememberSaveable(profile?.id) { mutableStateOf(profile?.username ?: "ec2-user") }
+    var username by rememberSaveable(profile?.id) { mutableStateOf(profile?.username ?: "ubuntu") }
     var host by rememberSaveable(profile?.id) { mutableStateOf(profile?.host.orEmpty()) }
     var port by rememberSaveable(profile?.id) { mutableStateOf(profile?.port?.toString() ?: "22") }
     var ipMode by rememberSaveable(profile?.id) {
@@ -103,7 +103,7 @@ fun MachineFormScreen(
             value = alias,
             onValueChange = { alias = it },
             singleLine = true,
-            label = { Text("Apelido da maquina") }
+            label = { Text("Apelido da máquina") }
         )
 
         OutlinedTextField(
@@ -111,7 +111,7 @@ fun MachineFormScreen(
             value = username,
             onValueChange = { username = it },
             singleLine = true,
-            label = { Text("Usuario SSH") }
+            label = { Text("Usuário SSH") }
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -160,7 +160,7 @@ fun MachineFormScreen(
                 value = host,
                 onValueChange = { host = it.trim() },
                 singleLine = true,
-                label = { Text("IP publico ou DNS") }
+                label = { Text("IP público ou DNS") }
             )
         }
 
@@ -203,11 +203,10 @@ fun MachineFormScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onDelete(profile) }
             ) {
-                Text("Remover maquina")
+                Text("Remover máquina")
             }
         }
     }
 }
 
-private val USER_SUGGESTIONS = listOf("ec2-user", "ubuntu", "admin", "root")
-
+private val USER_SUGGESTIONS = listOf("ubuntu", "ec2-user", "admin", "root")

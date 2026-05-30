@@ -141,12 +141,12 @@ class MainViewModel(
                     it.copy(
                         screen = AppScreen.HOME,
                         editingProfileId = null,
-                        message = "Maquina salva."
+                        message = "Máquina salva."
                     )
                 }
             }.onFailure { error ->
                 _uiState.update {
-                    it.copy(message = error.message ?: "Nao foi possivel salvar a maquina.")
+                    it.copy(message = error.message ?: "Não foi possível salvar a máquina.")
                 }
             }
         }
@@ -159,11 +159,11 @@ class MainViewModel(
                 container.privateKeyStore.delete(profile.encryptedKeyFileName)
             }.onSuccess {
                 _uiState.update {
-                    it.copy(screen = AppScreen.HOME, editingProfileId = null, message = "Maquina removida.")
+                    it.copy(screen = AppScreen.HOME, editingProfileId = null, message = "Máquina removida.")
                 }
             }.onFailure { error ->
                 _uiState.update {
-                    it.copy(message = error.message ?: "Nao foi possivel remover a maquina.")
+                    it.copy(message = error.message ?: "Não foi possível remover a máquina.")
                 }
             }
         }
@@ -182,7 +182,7 @@ class MainViewModel(
 
         val host = profile.host
         if (host.isNullOrBlank()) {
-            _uiState.update { it.copy(message = "IP ou DNS nao configurado.") }
+            _uiState.update { it.copy(message = "IP ou DNS não configurado.") }
             return
         }
         connect(profile, host)
@@ -191,7 +191,7 @@ class MainViewModel(
     fun connectWithRotatingHost(host: String) {
         val request = _uiState.value.pendingRotatingIp ?: return
         if (!MachineValidator.isValidHost(host)) {
-            _uiState.update { it.copy(message = "Informe um IP ou DNS publico valido.") }
+            _uiState.update { it.copy(message = "Informe um IP ou DNS público válido.") }
             return
         }
         val profile = _uiState.value.profiles.firstOrNull { it.id == request.profileId } ?: return
@@ -249,7 +249,7 @@ class MainViewModel(
         }
 
         viewModelScope.launch {
-            emitTerminalLine("Connecting ${profile.username}@$host:${profile.port} ...")
+            emitTerminalLine("Conectando ${profile.username}@$host:${profile.port} ...")
             runCatching {
                 val privateKeyBytes = container.privateKeyStore.read(profile.encryptedKeyFileName)
                 container.sshSessionManager.connect(
@@ -273,7 +273,7 @@ class MainViewModel(
                         container.machineRepository.updateHostKeyFingerprint(profile.id, fingerprint)
                     }
                 _uiState.update { it.copy(connectionState = ConnectionState.CONNECTED) }
-                emitTerminalLine("Connected.")
+                emitTerminalLine("Conectado.")
             }.onFailure { error ->
                 activeSession?.close()
                 activeSession = null
@@ -283,7 +283,7 @@ class MainViewModel(
                         message = error.message ?: "Falha ao conectar por SSH."
                     )
                 }
-                emitTerminalLine("Connection failed: ${error.message ?: "unknown error"}")
+                emitTerminalLine("Falha na conexão: ${error.message ?: "erro desconhecido"}")
             }
         }
     }
@@ -327,4 +327,3 @@ class MainViewModel(
         }
     }
 }
-

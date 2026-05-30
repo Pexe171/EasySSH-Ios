@@ -7,10 +7,10 @@ object MachineValidator {
         val errors = mutableListOf<String>()
 
         if (draft.alias.isBlank()) {
-            errors += "Informe o apelido da maquina."
+            errors += "Informe o apelido da máquina."
         }
         if (draft.username.isBlank()) {
-            errors += "Informe o usuario SSH."
+            errors += "Informe o usuário SSH."
         }
 
         val port = draft.port.toIntOrNull()
@@ -19,7 +19,7 @@ object MachineValidator {
         }
 
         if (draft.ipMode == IpMode.STATIC && !isValidHost(draft.host)) {
-            errors += "Informe um IP ou DNS publico valido."
+            errors += "Informe um IP ou DNS público válido."
         }
 
         if (draft.encryptedKeyFileName == null && !hasSelectedKey) {
@@ -38,4 +38,3 @@ object MachineValidator {
             hostRegex.matches(trimmed)
     }
 }
-
